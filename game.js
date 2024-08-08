@@ -1,3 +1,5 @@
+import { createAnimations } from "./animations.js"
+
 const config = {
     type: Phaser.AUTO, //1ro intenta webgl, 2do canvas ...
     width: 256,
@@ -39,6 +41,8 @@ function preload() {
             frameHeight: 16
         }
     )
+
+    this.load.audio('gameover', 'assets/sound/music/gameover.mp3')
 } // ejecuta 1ro
 
 function create() {
@@ -47,11 +51,11 @@ function create() {
         .setScale(0.15)
 
     this.floor = this.physics.add.staticGroup();
-    this.floor.create(-32, config.height - 16, "floorbricks").
-        setOrigin(0, 0.5)
+    this.floor.create(-32, config.height - 16, "floorbricks")
+        .setOrigin(0, 0.5)
         .refreshBody()
-    this.floor.create(128, config.height - 16, "floorbricks").
-        setOrigin(0, 0.5)
+    this.floor.create(128, config.height - 16, "floorbricks")
+        .setOrigin(0, 0.5)
         .refreshBody()
 
     // this.add.tileSprite(0, config.height - 32, config.width, 32, "floorbricks").setOrigin(0, 0)
@@ -61,37 +65,24 @@ function create() {
     this.mario = this.physics.add.sprite(50, 10, "mario")
         .setOrigin(0, 1)
         .setGravityY(400)
-        .setCollideWorldBounds()
+        .setCollideWorldBounds(true)
 
     // agregar al mundo colisiones
-    this.physics.add.collider(this.mario, this.floor)
-
-    this.anims.create({
-        key: "mario-run",
-        frames: this.anims.generateFrameNumbers(
-            'mario',
-            { start: 3, end: 1 }
-        ),
-        frameRate: 12, //cuanto dura cada frame
-        repeat: -1
-    })
-    this.anims.create({
-        key: "mario-idle",
-        frames: [
-            { key: "mario", frame: 0 }
-        ]
-    })
-    this.anims.create({
-        key: "mario-jump",
-        frames: [
-            { key: "mario", frame: 5 }
-        ]
-    })
-
+    this.physics.world.setBounds(0, 0, 2000, config.height);
+    this.physics.add.collider(this.mario, this.floor);
+    // camaras
+    this.cameras.main.setBounds(0, 0, 2000, config.height);
+    this.cameras.main.startFollow(this.mario);
+    // teclas
     this.keys = this.input.keyboard.createCursorKeys();
+
+    createAnimations(this);
+
 } // ejecuta 2do
 
 function update() {
+    if (this.mario.isDead) return
+
     if (this.keys.right.isDown) {
         this.mario.anims.play('mario-run', true);
         this.mario.flipX = false;
@@ -102,8 +93,8 @@ function update() {
         this.mario.flipX = true;
         this.mario.x -= 1.7;
     }
-    else if (this.keys.space.isDown ) {
-        this.mario.setVelocityY(-200)
+    else if (this.keys.up.isDown) {
+        if (this.mario.body.touching.down) this.mario.setVelocityY(-300);
         this.mario.anims.play('mario-jump', true);
     }
     else if (this.keys.down.isDown) {
@@ -111,5 +102,19 @@ function update() {
     }
     else {
         this.mario.anims.play('mario-idle', true);
+    }
+    if (this.mario.y >= config.height) {
+        this.mario.isDead = true;
+        this.mario.anims.play('mario-dead');
+        this.mario.setCollideWorldBounds(false)
+        this.sound.add('gameover', { volume: 0.4 }).play()
+
+        setTimeout(() => {
+            this.mario.setVelocityY(-350);
+        }, 77)
+
+        setTimeout(() => {
+            this.scene.restart();
+        }, 7000)
     }
 } // 3ro y continuamente
