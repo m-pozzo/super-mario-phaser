@@ -1,4 +1,5 @@
 import { createAnimations } from "./animations.js"
+import { checkControls } from "./controls.js"
 
 const config = {
     type: Phaser.AUTO, //1ro intenta webgl, 2do canvas ...
@@ -9,7 +10,7 @@ const config = {
     physics: {
         default: 'arcade',
         arcade: {
-            gravity: { y: 200 },
+            gravity: { y: 300 },
             debug: false
         }
     },
@@ -64,7 +65,7 @@ function create() {
     //     .setOrigin(0, 1)
     this.mario = this.physics.add.sprite(50, 10, "mario")
         .setOrigin(0, 1)
-        .setGravityY(400)
+        .setGravityY(350)
         .setCollideWorldBounds(true)
 
     // agregar al mundo colisiones
@@ -81,40 +82,26 @@ function create() {
 } // ejecuta 2do
 
 function update() {
-    if (this.mario.isDead) return
+    const { mario, scene, sound } = this;
 
-    if (this.keys.right.isDown) {
-        this.mario.anims.play('mario-run', true);
-        this.mario.flipX = false;
-        this.mario.x += 1.7;
-    }
-    else if (this.keys.left.isDown) {
-        this.mario.anims.play('mario-run', true);
-        this.mario.flipX = true;
-        this.mario.x -= 1.7;
-    }
-    else if (this.keys.up.isDown) {
-        if (this.mario.body.touching.down) this.mario.setVelocityY(-300);
-        this.mario.anims.play('mario-jump', true);
-    }
-    else if (this.keys.down.isDown) {
-        this.mario.y += 5;
-    }
-    else {
-        this.mario.anims.play('mario-idle', true);
-    }
-    if (this.mario.y >= config.height) {
-        this.mario.isDead = true;
-        this.mario.anims.play('mario-dead');
-        this.mario.setCollideWorldBounds(false)
-        this.sound.add('gameover', { volume: 0.4 }).play()
+    if (mario.isDead) return //si esta muerto, dejan de funcionar los controles
+
+    checkControls(this);
+    
+
+    // verifica si mario esta muerto
+    if (mario.y >= config.height) {
+        mario.isDead = true;
+        mario.anims.play('mario-dead');
+        mario.setCollideWorldBounds(false);
+
+        sound.add('gameover', { volume: 0.2 }).play();
 
         setTimeout(() => {
-            this.mario.setVelocityY(-350);
-        }, 77)
-
+            mario.setVelocityY(-350);
+        }, 77);
         setTimeout(() => {
-            this.scene.restart();
-        }, 7000)
+            scene.restart();
+        }, 7000);
     }
 } // 3ro y continuamente
