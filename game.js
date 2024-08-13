@@ -1,4 +1,5 @@
 import { createAnimations } from "./animations.js"
+import { getAudios } from "./audios.js"
 import { checkControls } from "./controls.js"
 
 const config = {
@@ -43,7 +44,16 @@ function preload() {
         }
     )
 
-    this.load.audio('gameover', 'assets/sound/music/gameover.mp3')
+    this.load.spritesheet(
+        'goomba',
+        'assets/entities/overworld/goomba.png',
+        {
+            frameWidth: 16,
+            frameHeight: 16
+        }
+    )
+
+    getAudios(this)
 } // ejecuta 1ro
 
 function create() {
@@ -63,23 +73,48 @@ function create() {
 
     // this.mario = this.add.sprite(50, 200, "mario")
     //     .setOrigin(0, 1)
-    this.mario = this.physics.add.sprite(50, 10, "mario")
+
+    this.mario = this.physics.add.sprite(20, 10, "mario")
         .setOrigin(0, 1)
         .setGravityY(350)
         .setCollideWorldBounds(true)
-
+    //agregar goomba
+    this.enemy = this.physics.add.sprite(80, config.height - 30, "goomba")
+        .setOrigin(0, 1)
+        .setGravityY(350)
+        .setVelocityX(-50)
     // agregar al mundo colisiones
     this.physics.world.setBounds(0, 0, 2000, config.height);
     this.physics.add.collider(this.mario, this.floor);
+    this.physics.add.collider(this.enemy, this.floor);
+    this.physics.add.collider(this.mario, this.enemy, onHitEnemy, null, this);
+
     // camaras
     this.cameras.main.setBounds(0, 0, 2000, config.height);
     this.cameras.main.startFollow(this.mario);
+
     // teclas
     this.keys = this.input.keyboard.createCursorKeys();
 
     createAnimations(this);
 
+    this.enemy.anims.play('goomba-walk')
 } // ejecuta 2do
+
+function onHitEnemy(mario, enemy) {
+    if (mario.body.touching.down && enemy.body.touching.up) {
+        enemy.anims.play("goomba-dead");
+        this.sound.add('goomba-stomp').play();
+        enemy.setVelocityX(0);
+        mario.setVelocityY(-200);
+        setTimeout(() => {
+            enemy.destroy()
+        }, 500);
+    }else {
+        // mario muerto
+
+    }
+}
 
 function update() {
     const { mario, scene, sound } = this;
@@ -87,7 +122,7 @@ function update() {
     if (mario.isDead) return //si esta muerto, dejan de funcionar los controles
 
     checkControls(this);
-    
+
 
     // verifica si mario esta muerto
     if (mario.y >= config.height) {

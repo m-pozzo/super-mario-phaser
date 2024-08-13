@@ -26,4 +26,19 @@ export const createAnimations = (game) =>{
             { key: "mario", frame: 4 }
         ]
     })
+    game.anims.create({
+        key: "goomba-walk",
+        frames: game.anims.generateFrameNumbers(
+            'goomba',
+            {start: 0, end: 1}
+        ),
+        frameRate: 8,
+        repeat: -1
+    })
+    game.anims.create({
+        key: "goomba-dead",
+        frames: [
+            {key: 'goomba', frame: 2}
+        ],
+    })
 }
