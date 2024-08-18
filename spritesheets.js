@@ -1,26 +1,32 @@
 const INIT_SPRITESHEETS = [
     {
-        id: 'mario',
+        key: 'mario',
         path: 'assets/entities/mario.png',
         frameWidth: 18,
         frameHeight: 16
     },
     {
-        id: 'goomba',
+        key: 'goomba',
         path: 'assets/entities/overworld/goomba.png',
         frameWidth: 16,
         frameHeight: 16
     },
     {
-        id: 'coin',
+        key: 'coin',
         path: 'assets/collectibles/coin.png',
         frameWidth: 16,
         frameHeight: 16
+    },
+    {
+        key: 'mario-grown',
+        path: 'assets/entities/mario-grown.png',
+        frameWidth: 18,
+        frameHeight: 32
     }
 ]
 
 export const getSpritesheets = ({ load }) => {
-    INIT_SPRITESHEETS.forEach(({ id, path, frameHeight, frameWidth }) => {
-        load.spritesheet(id, path, { frameWidth, frameHeight });
+    INIT_SPRITESHEETS.forEach(({ key, path, frameHeight, frameWidth }) => {
+        load.spritesheet(key, path, { frameWidth, frameHeight });
     })
 }
