@@ -112,18 +112,42 @@ function create() {
     this.enemy.anims.play('goomba-walk')
 } // ejecuta 2do
 
+function addToScore(score, origin, game) {
+    const scoreText = game.add.text(
+        origin.x,
+        origin.y,
+        score,
+        {
+            fontFamily: 'pixel',
+            fontSize: config.width / 30
+        }
+    )
+    game.tweens.add({
+        targets: scoreText,
+        duration: 350,
+        y: scoreText.y - 14,
+        onComplete: () => {
+            game.tweens.add({
+                targets: scoreText,
+                duration: 77,
+                alpha: 0,
+                onComplete: () => {
+                    scoreText.destroy()
+                }
+            })
+        }
+    })
+}
+
 function collectCoin(mario, coin) {
 
     playAudio('coin-pickup', this, { volume: 0.2 })
+    addToScore(100, coin, this)
 
     setTimeout(() => {
-        coin.y -= 4;
-    }, 10)
-
-    setTimeout(() => {
-        // otra opcion, disableBody()
+        // otra opcion, disableBody() para que desaparezca
         coin.destroy()
-    }, 100)
+    }, 10)
 }
 
 function onHitEnemy(mario, enemy) {
@@ -131,6 +155,7 @@ function onHitEnemy(mario, enemy) {
         enemy.anims.play("goomba-dead");
 
         playAudio('goomba-stomp', this);
+        addToScore(200, enemy, this)
 
         enemy.setVelocityX(0);
         mario.setVelocityY(-200);
